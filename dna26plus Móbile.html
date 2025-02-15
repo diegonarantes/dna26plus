@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dna26Plus</title>
-    <link rel="icon" type="image/png" href="favicon.png">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,20 +28,9 @@
             border-radius: 5px;
             box-sizing: border-box;
         }
-        .title-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
         h1 {
             color: darkblue;
             font-size: 22px;
-            margin: 0;
-        }
-        .icon {
-            width: 32px;
-            height: 32px;
         }
         button {
             background-color: darkblue;
@@ -58,10 +46,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="title-container">
-            <img class="icon" src="favicon.png" alt="Ícone de chave">
-            <h1><b>Dna26Plus</b></h1>
-        </div>
+        <h1><b>Dna26Plus</b></h1>
         <label>Senha A:</label>
         <input type="text" id="passwordA">
         <label>Senha B:</label>
@@ -79,5 +64,59 @@
         <input type="text" id="result" readonly>
         <button onclick="copyResult()">Copiar Resultado</button>
     </div>
+    
+    <script>
+        function calculateShift(password) {
+            return password.split('').reduce((sum, char) => sum + (char.toUpperCase().charCodeAt(0) - 64), 0) % 26;
+        }
+
+        function shiftText(text, shift) {
+            return text.split('').map(char => {
+                if (/[a-zA-Z]/.test(char)) {
+                    let base = char === char.toUpperCase() ? 65 : 97;
+                    return String.fromCharCode(((char.charCodeAt(0) - base + shift) % 26) + base);
+                }
+                return char;
+            }).join('');
+        }
+
+        function processText(action) {
+            let passwordA = document.getElementById('passwordA').value;
+            let passwordB = document.getElementById('passwordB').value;
+            let text = document.getElementById('textInput').value;
+            let wordCount = parseInt(document.getElementById('wordCount').value);
+            
+            let shiftA = calculateShift(passwordA);
+            let shiftB = calculateShift(passwordB);
+            let words = text.split(' ');
+            
+            let half = wordCount / 2;
+            let processedWords = words.map((word, index) => {
+                let shift = index < half ? shiftA : shiftB;
+                if (action === 'decodificar') shift = 26 - shift;
+                return shiftText(word, shift);
+            });
+            
+            document.getElementById('result').value = processedWords.join(' ');
+        }
+
+        function copyResult() {
+            let resultField = document.getElementById('result');
+            
+            if (!resultField.value) {
+                alert("Nenhum resultado para copiar!");
+                return;
+            }
+            
+            navigator.clipboard.writeText(resultField.value).then(() => {
+                alert("Resultado copiado para a área de transferência!");
+            }).catch(err => {
+                console.error("Erro ao copiar: ", err);
+                resultField.select();
+                document.execCommand("copy");
+                alert("Resultado copiado manualmente!");
+            });
+        }
+    </script>
 </body>
 </html>
